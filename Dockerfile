@@ -1,7 +1,7 @@
 FROM alpine:3.5
 MAINTAINER Adam Dodman <adam.dodman@gmx.com>
 
-ENV UID=236 UNAME=nzbget GID=990 GNAME=media
+ENV UID=904 UNAME=nzbget GID=900 GNAME=media
 
 ADD start.sh /start.sh
 
