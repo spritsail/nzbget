@@ -5,4 +5,4 @@ if [ ! -f /config/nzbget.conf ]; then
 	echo "Created Config File"
 fi
 
-/nzbget/nzbget -c /config/nzbget.conf -s -o OutputMode=log
+nzbget -c /config/nzbget.conf -s -o OutputMode=log

@@ -11,6 +11,7 @@ RUN chmod +x /start.sh \
  && apk add --no-cache openssl unrar p7zip python \
  && wget -O nzbget.run `wget -qO- http://nzbget.net/info/nzbget-version-linux.json | sed -n "s/^.*stable-download.*: \"\(.*\)\".*/\1/p"` \
  && sh nzbget.run \
+ && ln -sfv /nzbget/nzbget /usr/bin/nzbget \
  && rm -rf /nzbget.run \
  && apk del --no-cache openssl
 
