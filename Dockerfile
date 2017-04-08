@@ -19,4 +19,5 @@ USER $UNAME
 
 VOLUME ["/config", "/media"]
 EXPOSE 6789
-CMD ["/start.sh"]
+ENTRYPOINT ["/start.sh"]
+CMD ["nzbget", "-c", "/config/nzbget.conf", "-s", "-o", "OutputMode=log"]
