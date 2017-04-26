@@ -8,7 +8,7 @@ ADD start.sh /start.sh
 RUN chmod +x /start.sh \
  && addgroup -g $GID $GNAME \
  && adduser -SH -u $UID -G $GNAME -s /usr/sbin/nologin $UNAME \
- && apk add --no-cache openssl unrar p7zip python \
+ && apk add --no-cache openssl unrar p7zip python tini \
  && wget -O nzbget.run `wget -qO- http://nzbget.net/info/nzbget-version-linux.json | sed -n "s/^.*stable-download.*: \"\(.*\)\".*/\1/p"` \
  && sh nzbget.run \
  && ln -sfv /nzbget/nzbget /usr/bin/nzbget \
@@ -19,5 +19,5 @@ USER $UNAME
 
 VOLUME ["/config", "/media"]
 EXPOSE 6789
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/start.sh"]
 CMD ["nzbget", "-c", "/config/nzbget.conf", "-s", "-o", "OutputMode=log"]
