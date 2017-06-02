@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.6
 MAINTAINER Adam Dodman <adam.dodman@gmx.com>
 
 ENV UID=904 UNAME=nzbget GID=900 GNAME=media
