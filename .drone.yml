@@ -31,7 +31,7 @@ pipeline:
     commands:
        - apk add --no-cache openssl 
        - echo $DOCKER_USER
-       - export $CURVER=$(wget -qO- https://nzbget.net/info/nzbget-version-linux.json | sed -n 's/.*"stable-version":\s*"\([^"]*\)".*/\1/p')
+       - export CURVER=$(wget -qO- https://nzbget.net/info/nzbget-version-linux.json | sed -n 's/.*"stable-version":\s*"\([^"]*\)".*/\1/p')
        - docker tag devbuild adamant/nzbget:latest
        - docker tag devbuild adamant/nzbget:$CURVER
        - docker login -u $DOCKER_USER -p $DOCKER_PASS
