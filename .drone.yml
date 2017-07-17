@@ -1,0 +1,39 @@
+services:
+  docker:
+    image: docker:dind
+    privileged: true
+
+pipeline:
+  build:
+    image: docker
+    environment:
+       - DOCKER_HOST=tcp://docker:2375
+    commands:
+       - docker build -t devbuild . 
+
+  test:
+    image: docker
+    environment:
+       - DOCKER_HOST=tcp://docker:2375
+    commands:
+      - apk add --no-cache curl
+      - docker run --name=DEV -d -p 6789:6789 --user=root devbuild # Need root for config
+      - sleep 5  # Wait for NzbGet to start!
+      - docker logs DEV
+      - curl -sSLu nzbget:tegbzn6789 docker:6789 > /dev/null 
+      - docker kill DEV # Not really needed, but keeps things quick
+
+  publish:
+    image: docker
+    secrets: [ DOCKER_USER, DOCKER_PASS ]
+    environment:
+       - DOCKER_HOST=tcp://docker:2375
+    commands:
+       - apk add --no-cache openssl 
+       - echo $DOCKER_USER
+       - export $CURVER=$(wget -qO- https://nzbget.net/info/nzbget-version-linux.json | sed -n 's/.*"stable-version":\s*"\([^"]*\)".*/\1/p')
+       - docker tag devbuild adamant/nzbget:latest
+       - docker tag devbuild adamant/nzbget:$CURVER
+       - docker login -u $DOCKER_USER -p $DOCKER_PASS
+       - docker push adamant/nzbget
+       - echo "CONGRATS! SUCCESSFULLY BUILT NZBGET-STABLE!"
