@@ -4,7 +4,7 @@ pipeline:
     volumes:
        - /var/run/docker.sock:/var/run/docker.sock
     commands:
-       - docker build -t nzbget-dev . 
+       - docker build --no-cache --pull -t nzbget-dev . 
 
   test:
     image: docker
