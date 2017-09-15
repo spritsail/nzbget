@@ -15,7 +15,7 @@ pipeline:
       - CON_NAME=$(docker run --rm -d -p 6789:6789 --user=root nzbget-dev) # Need root for config
       - sleep 5  # Wait for NzbGet to start!
       - docker logs $$CON_NAME
-      - curl -sSLu nzbget:tegbzn6789 $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME):6789 > /dev/null 
+      - curl -sSLu nzbget:tegbzn6789 --max-time 3 --retry 5 --retry-delay 5 $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME):6789 > /dev/null
       - docker kill $$CON_NAME # Not really needed, but keeps things quick
 
   publish:
