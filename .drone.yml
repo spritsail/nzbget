@@ -1,39 +1,35 @@
-services:
-  docker:
-    image: docker:dind
-    privileged: true
-
 pipeline:
   build:
     image: docker
-    environment:
-       - DOCKER_HOST=tcp://docker:2375
+    volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-       - docker build -t devbuild . 
+       - docker build -t nzbget-dev . 
 
   test:
     image: docker
-    environment:
-       - DOCKER_HOST=tcp://docker:2375
+    volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - apk add --no-cache curl
-      - docker run --name=DEV -d -p 6789:6789 --user=root devbuild # Need root for config
+      - CON_NAME=$(docker run --rm -d -p 6789:6789 --user=root nzbget-dev) # Need root for config
       - sleep 5  # Wait for NzbGet to start!
-      - docker logs DEV
-      - curl -sSLu nzbget:tegbzn6789 docker:6789 > /dev/null 
-      - docker kill DEV # Not really needed, but keeps things quick
+      - docker logs $$CON_NAME
+      - curl -sSLu nzbget:tegbzn6789 $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME):6789 > /dev/null 
+      - docker kill $$CON_NAME # Not really needed, but keeps things quick
 
   publish:
     image: docker
     secrets: [ DOCKER_USER, DOCKER_PASS ]
-    environment:
-       - DOCKER_HOST=tcp://docker:2375
+    volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
     commands:
        - apk add --no-cache openssl 
        - echo $DOCKER_USER
        - export CURVER=$(wget -qO- https://nzbget.net/info/nzbget-version-linux.json | sed -n 's/.*"stable-version":\s*"\([^"]*\)".*/\1/p')
-       - docker tag devbuild adamant/nzbget:latest
-       - docker tag devbuild adamant/nzbget:$CURVER
+       - docker tag nzbget-dev adamant/nzbget:latest
+       - docker tag nzbget-dev adamant/nzbget:$CURVER
        - docker login -u $DOCKER_USER -p $DOCKER_PASS
        - docker push adamant/nzbget
+       - docker rmi nzbget-dev adamant/nzbget
        - echo "CONGRATS! SUCCESSFULLY BUILT NZBGET-STABLE!"
