@@ -8,4 +8,7 @@ if [ ! -f "$conf_file" ]; then
 	echo "Created default config file at $conf_file"
 fi
 
-exec $@
+# Ensure nzbget directory is writeable by the running user
+chown -R $UID:$GID /nzbget
+
+exec su-exec $UID:$GID $@
