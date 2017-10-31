@@ -29,7 +29,13 @@ pipeline:
       - CON_NAME=$(docker run -d --user=root nzbget-dev) # Need root for config
       - sleep 5  # Wait for NzbGet to start!
       - docker logs $$CON_NAME
-      - curl -sSLu nzbget:tegbzn6789 --max-time 3 --retry 5 --retry-delay 5 $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME):6789 > /dev/null
+      - IP=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME)
+      - if [ -z "$IP" ]; then
+            echo "The container exited.. sadpanda";
+            docker inspect --format='{{.State.ExitCode}}' $$CON_NAME;
+            exit 25;
+        fi
+      - curl -sSLu nzbget:tegbzn6789 --max-time 3 --retry 5 --retry-delay 5 $IP:6789 > /dev/null
       - docker kill $$CON_NAME # Not really needed, but keeps things quick
       - docker rm $$CON_NAME
 
