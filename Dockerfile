@@ -25,4 +25,4 @@ RUN chmod +x /start.sh \
 VOLUME ["/config", "/media"]
 EXPOSE 6789
 ENTRYPOINT ["/sbin/tini", "--", "/start.sh"]
-CMD ["nzbget", "-c", "/config/nzbget.conf", "-s", "-o", "OutputMode=log"]
+CMD ["nzbget", "-c", "/config/nzbget.conf", "-s"]
