@@ -6,11 +6,9 @@ pipeline:
       - apk add --no-cache curl jq
       # Hugbug, you really gotta fix this bro :(
       - set -o pipefail
-      - curl -fL https://nzbget.netlify.com/info/nzbget-version-linux.json
-            | sed 's/NZBGet.VersionInfo = //'
-            | tee .nzbget_version_info
-      - jq -r '.["stable-version"]' .nzbget_version_info > .nzbget_stable_ver
-      - jq -r '.["stable-download"]' .nzbget_version_info > .nzbget_stable_url
+      - curl -fL "https://api.github.com/repos/nzbget/nzbget/releases/latest" > .nzbget_latest_release
+      - jq -r '.tag_name' .nzbget_latest_release > .nzbget_stable_tag
+      - jq -r '.name' .nzbget_latest_release > .nzbget_stable_name
 
   build:
     image: docker
@@ -18,7 +16,7 @@ pipeline:
        - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - apk add --no-cache jq
-      - docker build --no-cache --pull --build-arg NZBGET_URL=$(cat .nzbget_stable_url) -t nzbget-dev . 
+      - docker build --no-cache --pull --build-arg NZBGET_TAG=$(cat .nzbget_stable_tag) -t nzbget-dev .
 
   test:
     image: docker
@@ -49,7 +47,7 @@ pipeline:
     commands:
        - echo $DOCKER_USER
        - docker tag nzbget-dev adamant/nzbget:latest
-       - docker tag nzbget-dev adamant/nzbget:$(cat .nzbget_stable_ver)
+       - docker tag nzbget-dev adamant/nzbget:$(cat .nzbget_stable_name)
        - docker login -u $DOCKER_USER -p $DOCKER_PASS
        - docker push adamant/nzbget
        - docker rmi nzbget-dev adamant/nzbget
