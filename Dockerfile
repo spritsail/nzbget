@@ -57,4 +57,4 @@ RUN chmod +x entrypoint
 VOLUME ["/config", "/media"]
 EXPOSE 6789
 ENTRYPOINT ["/sbin/tini", "--", "/nzbget/entrypoint"]
-CMD ["nzbget", "-c", "/config/nzbget.conf", "-s"]
+CMD ["nzbget", "-c", "/config/nzbget.conf", "-s", "-o", "OutputMode=log"]
