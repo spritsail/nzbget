@@ -20,7 +20,8 @@ RUN apk add --no-cache \
         apk add --no-cache jq && \
         export NZBGET_TAG="$(wget -qO- http://nzbget.net/info/nzbget-version-linux.json \
                         | sed 's/NZBGet.VersionInfo = //' \
-                        | jq -r '.["stable-version"]')" && \
+                        | jq -r '.["stable-version"]' \
+                        | sed 's/^/v/;s/testing-//g')" && \
         apk del --no-cache jq; \
     fi \
     \
