@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM alpine:3.7
 MAINTAINER Adam Dodman <adam.dodman@gmx.com>
 
 ENV UID=904 GID=900
