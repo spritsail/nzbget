@@ -39,20 +39,15 @@ pipeline:
       - docker rm $$CON_NAME
 
   publish:
-    image: docker
-    secrets: [ docker_username, docker_password ]
-    when:
-       event: [push, tag, deployment]
-    volumes:
-       - /var/run/docker.sock:/var/run/docker.sock
-    commands:
-       - echo $docker_user
-       - docker tag nzbget-dev spritsail/nzbget:latest
-       - docker tag nzbget-dev spritsail/nzbget:$(cat .nzbget_stable_name)
-       - docker login -u $docker_username -p $docker_password
-       - docker push spritsail/nzbget
-       - docker rmi nzbget-dev spritsail/nzbget:latest spritsail/nzbget:$(cat .nzbget_stable_name)
-       - echo "CONGRATS! SUCCESSFULLY BUILT NZBGET-STABLE!"
+    image: spritsail/docker-publish
+    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
+    secrets: [ docker_username, docker_password, microbadger_token ]
+    when: { event: [ push, tag, deployment ] }
+    from: nzbget-dev
+    repo: spritsail/nzbget
+    tags:
+      - 'latest'
+      - '%fileauto: .nzbget_stable_tag'
 
   notify:
     image: appleboy/drone-telegram
