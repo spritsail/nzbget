@@ -1,11 +1,17 @@
 FROM alpine:3.7
-MAINTAINER Adam Dodman <adam.dodman@gmx.com>
 
 ENV UID=904 GID=900
 
 ARG NZBGET_TAG
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
+
+LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
+      org.label-schema.vendor="Spritsail" \
+      org.label-schema.name="NZBGet" \
+      org.label-schema.url="https://github.com/spritsail/nzbget" \
+      org.label-schema.description="NZBGet - the efficient Usenet downloader" \
+      org.label-schema.version=${NZBGET_TAG}
 
 WORKDIR /tmp
 
