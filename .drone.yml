@@ -7,14 +7,15 @@ pipeline:
       - curl -fsSL http://nzbget.net/info/nzbget-version-linux.json 
             | sed 's/NZBGet.VersionInfo = //'
             | tee .nzbget_latest_release
-      - jq -r '.["stable-version"]' .nzbget_latest_release > .nzbget_stable_ver
+      - jq -r '.["testing-version"]' .nzbget_latest_release
+            | sed 's/testing-//' > .nzbget_testing_ver
 
   build:
     image: spritsail/docker-build
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     repo: nzbget-dev
     build_args:
-      - 'NZBGET_VER=%file: .nzbget_stable_ver'
+      - 'NZBGET_VER=%file: .nzbget_testing_ver'
 
   test:
     image: docker
@@ -39,12 +40,12 @@ pipeline:
     image: spritsail/docker-publish
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     secrets: [ docker_username, docker_password, microbadger_token ]
-    when: { branch: [ master ], event: [ push, tag, deployment ] }
+    when: { branch: [ testing ], event: [ push, tag, deployment ] }
     from: nzbget-dev
     repo: spritsail/nzbget
     tags:
-      - 'latest'
-      - '%fileauto: .nzbget_stable_ver'
+      - 'testing'
+      - '%fileauto: %prefix: testing% .nzbget_testing_ver'
 
   notify:
     image: appleboy/drone-telegram
