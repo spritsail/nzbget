@@ -2,29 +2,26 @@ pipeline:
   identify:
     image: docker
     commands:
-      # Grab the current version, prevents race conditions
-      - apk add --no-cache curl jq
-      # Hugbug, you really gotta fix this bro :(
       - set -o pipefail
-      - curl -fL "https://api.github.com/repos/nzbget/nzbget/releases/latest" > .nzbget_latest_release
-      - jq -r '.tag_name' .nzbget_latest_release > .nzbget_stable_tag
-      - jq -r '.name' .nzbget_latest_release > .nzbget_stable_name
+      - apk add --no-cache curl jq
+      - curl -fsSL http://nzbget.net/info/nzbget-version-linux.json 
+            | sed 's/NZBGet.VersionInfo = //'
+            | tee .nzbget_latest_release
+      - jq -r '.["stable-version"]' .nzbget_latest_release > .nzbget_stable_ver
 
   build:
-    image: docker
-    volumes:
-       - /var/run/docker.sock:/var/run/docker.sock
-    commands:
-      - apk add --no-cache jq
-      - docker build --no-cache --pull --build-arg NZBGET_TAG=$(cat .nzbget_stable_tag) -t nzbget-dev .
+    image: spritsail/docker-build
+    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
+    repo: nzbget-dev
+    build_args:
+      - 'NZBGET_VER=%file: .nzbget_stable_ver'
 
   test:
     image: docker
-    volumes:
-       - /var/run/docker.sock:/var/run/docker.sock
+    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     commands:
       - apk add --no-cache curl
-      - CON_NAME=$(docker run -d --user=root nzbget-dev) # Need root for config
+      - CON_NAME=$(docker run -d nzbget-dev)
       - timeout -t 10 docker logs $$CON_NAME &
       - sleep 5
       - IP=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME)
@@ -42,12 +39,12 @@ pipeline:
     image: spritsail/docker-publish
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     secrets: [ docker_username, docker_password, microbadger_token ]
-    when: { event: [ push, tag, deployment ] }
+    when: { branch: [ master ], event: [ push, tag, deployment ] }
     from: nzbget-dev
     repo: spritsail/nzbget
     tags:
       - 'latest'
-      - '%fileauto: .nzbget_stable_tag'
+      - '%fileauto: .nzbget_stable_ver'
 
   notify:
     image: appleboy/drone-telegram

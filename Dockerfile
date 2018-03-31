@@ -1,41 +1,28 @@
 FROM alpine:3.7
 
-ENV UID=904 GID=900
-
-ARG NZBGET_TAG
+ARG SU_EXEC_VER=v0.3
+ARG NZBGET_VER=19.1
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
-
-LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
-      org.label-schema.vendor="Spritsail" \
-      org.label-schema.name="NZBGet" \
-      org.label-schema.url="https://github.com/spritsail/nzbget" \
-      org.label-schema.description="NZBGet - the efficient Usenet downloader" \
-      org.label-schema.version=${NZBGET_TAG}
 
 WORKDIR /tmp
 
 RUN apk add --no-cache \
-        unrar p7zip su-exec tini \
-        libxml2 zlib openssl ca-certificates \
+        unrar p7zip tini \
+        libxml2 openssl zlib ca-certificates \
  && apk add --no-cache -t build_deps \
-        git g++ make autoconf \
+        jq git g++ make autoconf \
         libxml2-dev zlib-dev openssl-dev \
     \
- && if [ -z "$NZBGET_TAG" ]; then \
-        apk add --no-cache jq && \
-        export NZBGET_TAG="$(wget -qO- http://nzbget.net/info/nzbget-version-linux.json \
-                        | sed 's/NZBGet.VersionInfo = //' \
-                        | jq -r '.["stable-version"]' \
-                        | sed 's/^/v/;s/testing-//g')" && \
-        apk del --no-cache jq; \
-    fi \
+ && wget -qO- https://github.com/frebib/su-exec/releases/download/${SU_EXEC_VER}/su-exec-alpine-$(uname -m) > /sbin/su-exec \
+ && chmod +x /sbin/su-exec \
     \
- && git clone https://github.com/nzbget/nzbget.git . \
- && git checkout develop \
- # ensure we're attached to develop after checkout \
- && git reset $NZBGET_TAG --hard \
- && ./configure --disable-curses --disable-dependency-tracking \
+ && git clone -b develop https://github.com/nzbget/nzbget.git . \
+ && git reset "v${NZBGET_VER}" --hard \
+    \
+ && ./configure \
+        --disable-dependency-tracking \
+        --disable-curses \
  && make -j$(nproc 2>/dev/null || grep processor /proc/cpuinfo | wc -l || echo 1) \
     \
  && sed -i 's|\(^AppDir=\).*|\1/nzbget|; \
@@ -50,17 +37,39 @@ RUN apk add --no-cache \
             s|\\(^CertCheck=\\).*|\\1yes|" nzbget.conf \
  && mkdir /nzbget /downloads \
  && mv nzbget nzbget.conf webui COPYING /nzbget \
+ && chmod g+rw /nzbget \
  && ln -sfv ../../nzbget/nzbget /usr/bin \
     \
  && find /tmp -mindepth 1 -delete \
  && apk del --no-cache build_deps
 
+# ~~~~~~~~~~~~~~~~
+
+ENV SUID=904 SGID=900
+ENV NZBGET_CONF_FILE="/config/nzbget.conf"
+
+LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
+      org.label-schema.vendor="Spritsail" \
+      org.label-schema.name="NZBGet" \
+      org.label-schema.url="https://nzbget.net/" \
+      org.label-schema.description="NZBGet - the efficient Usenet downloader" \
+      org.label-schema.version=${NZBGET_VER}
+
 WORKDIR /nzbget
 
-COPY entrypoint .
-RUN chmod +x entrypoint
-
-VOLUME ["/config", "/media"]
 EXPOSE 6789
-ENTRYPOINT ["/sbin/tini", "--", "/nzbget/entrypoint"]
-CMD ["nzbget", "-c", "/config/nzbget.conf", "-s", "-o", "OutputMode=log"]
+VOLUME ["/config", "/downloads"]
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD set -e; \
+    if [ ! -f "$NZBGET_CONF_FILE" ]; then \
+        install -m 644 -o $SUID -g $SGID /nzbget/nzbget.conf $NZBGET_CONF_FILE; \
+        echo "Created default config file at $NZBGET_CONF_FILE"; \
+    fi; \
+    \
+    su-exec -e test -w /config || chown $SUID:$SGID /config; \
+    su-exec -e test -w /downloads || chown $SUID:$SGID /downloads; \
+    # Ensure nzbget directory is writeable by the running user
+    chgrp -R $SGID /nzbget; \
+    \
+    exec su-exec -e nzbget -c $NZBGET_CONF_FILE -s -o OutputMode=log
+
