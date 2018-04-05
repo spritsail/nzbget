@@ -2,6 +2,7 @@ FROM alpine:3.7
 
 ARG SU_EXEC_VER=v0.3
 ARG NZBGET_VER=19.1
+ARG NZBGET_TAG="v${NZBGET_VER}"
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -18,7 +19,7 @@ RUN apk add --no-cache \
  && chmod +x /sbin/su-exec \
     \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
- && git reset "v${NZBGET_VER}" --hard \
+ && git reset "${NZBGET_TAG}" --hard \
     \
  && ./configure \
         --disable-dependency-tracking \
