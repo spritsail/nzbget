@@ -3,18 +3,19 @@ pipeline:
     image: docker
     commands:
       - set -o pipefail
-      - apk add --no-cache curl jq
-      - curl -fsSL http://nzbget.net/info/nzbget-version-linux.json 
-            | sed 's/NZBGet.VersionInfo = //'
-            | tee .nzbget_latest_release
-      - jq -r '.["stable-version"]' .nzbget_latest_release > .nzbget_stable_ver
+      - apk add --no-cache git
+      - dir="$(mktemp -d)"
+      - git clone https://github.com/nzbget/nzbget.git "$dir"
+      - git -C "$dir" rev-parse --verify HEAD | tee .nzbget_dev_head
+      - ( echo -n 'dev-r'; git -C "$dir" rev-list HEAD | wc -l; ) | tee .nzbget_dev_tag
 
   build:
     image: spritsail/docker-build
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     repo: nzbget-dev
     build_args:
-      - 'NZBGET_VER=%file: .nzbget_stable_ver'
+      - 'NZBGET_VER=%file: .nzbget_dev_tag'
+      - 'NZBGET_TAG=%file: .nzbget_dev_head'
 
   test:
     image: docker
@@ -22,7 +23,7 @@ pipeline:
     commands:
       - apk add --no-cache curl
       - CON_NAME=$(docker run -d nzbget-dev)
-      - timeout -t 10 docker logs $$CON_NAME &
+      - timeout -t 10 docker logs -f $$CON_NAME &
       - sleep 5
       - IP=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME)
       - if [ -z "$IP" ]; then
@@ -39,12 +40,12 @@ pipeline:
     image: spritsail/docker-publish
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     secrets: [ docker_username, docker_password, microbadger_token ]
-    when: { branch: [ master ], event: [ push, tag, deployment ] }
+    when: { branch: [ develop ], event: [ push, tag, deployment ] }
     from: nzbget-dev
     repo: spritsail/nzbget
     tags:
-      - 'latest'
-      - '%fileauto: .nzbget_stable_ver'
+      - 'dev'
+      - '%file: .nzbget_dev_tag'
 
   notify:
     image: appleboy/drone-telegram

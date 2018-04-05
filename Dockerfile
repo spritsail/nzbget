@@ -1,8 +1,8 @@
 FROM alpine:3.7
 
 ARG SU_EXEC_VER=v0.3
-ARG NZBGET_VER=19.1
-ARG NZBGET_TAG="v${NZBGET_VER}"
+ARG NZBGET_VER=develop
+ARG NZBGET_TAG=HEAD
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
