@@ -1,24 +1,21 @@
-FROM alpine:3.7
+FROM spritsail/alpine:3.7
 
-ARG SU_EXEC_VER=v0.3
 ARG NZBGET_VER=19.1
+ARG NZBGET_TAG="v${NZBGET_VER}"
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
 WORKDIR /tmp
 
 RUN apk add --no-cache \
-        unrar p7zip tini \
+        unrar p7zip \
         libxml2 openssl zlib ca-certificates \
  && apk add --no-cache -t build_deps \
         jq git g++ make autoconf \
         libxml2-dev zlib-dev openssl-dev \
     \
- && wget -qO- https://github.com/frebib/su-exec/releases/download/${SU_EXEC_VER}/su-exec-alpine-$(uname -m) > /sbin/su-exec \
- && chmod +x /sbin/su-exec \
-    \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
- && git reset "v${NZBGET_VER}" --hard \
+ && git reset "${NZBGET_TAG}" --hard \
     \
  && ./configure \
         --disable-dependency-tracking \
@@ -49,7 +46,6 @@ ENV SUID=904 SGID=900
 ENV NZBGET_CONF_FILE="/config/nzbget.conf"
 
 LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
-      org.label-schema.vendor="Spritsail" \
       org.label-schema.name="NZBGet" \
       org.label-schema.url="https://nzbget.net/" \
       org.label-schema.description="NZBGet - the efficient Usenet downloader" \
