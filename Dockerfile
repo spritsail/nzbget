@@ -1,4 +1,4 @@
-FROM spritsail/alpine:3.7
+FROM spritsail/alpine:3.8
 
 ARG NZBGET_VER=20.0
 ARG NZBGET_TAG="v${NZBGET_VER}"
