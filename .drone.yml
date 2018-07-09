@@ -1,20 +1,8 @@
 pipeline:
-  identify:
-    image: docker
-    commands:
-      - set -o pipefail
-      - apk add --no-cache curl jq
-      - curl -fsSL http://nzbget.net/info/nzbget-version-linux.json 
-            | sed 's/NZBGet.VersionInfo = //'
-            | tee .nzbget_latest_release
-      - jq -r '.["stable-version"]' .nzbget_latest_release > .nzbget_stable_ver
-
   build:
     image: spritsail/docker-build
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     repo: nzbget-dev
-    build_args:
-      - 'NZBGET_VER=%file: .nzbget_stable_ver'
 
   test:
     image: docker
@@ -44,7 +32,7 @@ pipeline:
     repo: spritsail/nzbget
     tags:
       - 'latest'
-      - '%fileauto: .nzbget_stable_ver'
+      - '%label: io.spritsail.version.nzbget'
 
   notify:
     image: spritsail/notify
