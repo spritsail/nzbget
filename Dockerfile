@@ -1,6 +1,6 @@
 FROM spritsail/alpine:3.8
 
-ARG NZBGET_VER=21.0
+ARG NZBGET_VER=20.0-r2190
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -13,8 +13,7 @@ RUN apk add --no-cache \
         jq git g++ make autoconf \
         libxml2-dev zlib-dev openssl-dev \
     \
- && git clone -b develop https://github.com/nzbget/nzbget.git . \
- && git reset "v${NZBGET_VER}" --hard \
+ && git clone https://github.com/nzbget/nzbget.git -b "v${NZBGET_VER}" --depth=1 . \
     \
  && ./configure \
         --disable-dependency-tracking \
