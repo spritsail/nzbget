@@ -1,21 +1,8 @@
 pipeline:
-  identify:
-    image: docker
-    commands:
-      - set -o pipefail
-      - apk add --no-cache git
-      - dir="$(mktemp -d)"
-      - git clone https://github.com/nzbget/nzbget.git "$dir"
-      - git -C "$dir" rev-parse --verify HEAD | tee .nzbget_dev_head
-      - ( echo -n 'dev-r'; git -C "$dir" rev-list HEAD | wc -l; ) | tee .nzbget_dev_tag
-
   build:
     image: spritsail/docker-build
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
     repo: nzbget-dev
-    build_args:
-      - 'NZBGET_VER=%file: .nzbget_dev_tag'
-      - 'NZBGET_TAG=%file: .nzbget_dev_head'
 
   test:
     image: docker
@@ -45,7 +32,7 @@ pipeline:
     repo: spritsail/nzbget
     tags:
       - 'dev'
-      - '%file: .nzbget_dev_tag'
+      - '%label: %prefix:dev% io.spritsail.version.nzbget'
 
   notify:
     image: spritsail/notify
