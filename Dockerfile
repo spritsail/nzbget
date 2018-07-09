@@ -1,7 +1,6 @@
 FROM spritsail/alpine:3.8
 
 ARG NZBGET_VER=20.0
-ARG NZBGET_TAG="v${NZBGET_VER}"
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -15,7 +14,7 @@ RUN apk add --no-cache \
         libxml2-dev zlib-dev openssl-dev \
     \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
- && git reset "${NZBGET_TAG}" --hard \
+ && git reset "v${NZBGET_TAG}" --hard \
     \
  && ./configure \
         --disable-dependency-tracking \
@@ -49,7 +48,8 @@ LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
       org.label-schema.name="NZBGet" \
       org.label-schema.url="https://nzbget.net/" \
       org.label-schema.description="NZBGet - the efficient Usenet downloader" \
-      org.label-schema.version=${NZBGET_VER}
+      org.label-schema.version=${NZBGET_VER} \
+      io.spritsail.version.nzbget=${NZBGET_VER}
 
 WORKDIR /nzbget
 
