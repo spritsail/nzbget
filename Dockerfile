@@ -14,7 +14,7 @@ RUN apk add --no-cache \
         libxml2-dev zlib-dev openssl-dev \
     \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
- && git reset "v${NZBGET_TAG}" --hard \
+ && git reset "v${NZBGET_VER}" --hard \
     \
  && ./configure \
         --disable-dependency-tracking \
