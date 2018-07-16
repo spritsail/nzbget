@@ -32,6 +32,7 @@ pipeline:
     repo: spritsail/nzbget
     tags:
       - 'dev'
+      - '%label: io.spritsail.version.nzbget'
 
   notify:
     image: spritsail/notify
