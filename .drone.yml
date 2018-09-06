@@ -5,23 +5,12 @@ pipeline:
     repo: nzbget-dev
 
   test:
-    image: docker
+    image: spritsail/docker-test
     volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    commands:
-      - apk add --no-cache curl
-      - CON_NAME=$(docker run -d nzbget-dev)
-      - timeout -t 10 docker logs $$CON_NAME &
-      - sleep 5
-      - IP=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME)
-      - if [ -z "$IP" ]; then
-            echo "The container exited.. sadpanda";
-            docker inspect --format='{{.State.ExitCode}}' $$CON_NAME;
-            docker rm $$CON_NAME
-            exit 25;
-        fi
-      - curl -sSLu nzbget:tegbzn6789 --max-time 3 --retry 5 --retry-delay 2 --retry-connrefused $IP:6789 > /dev/null
-      - docker kill $$CON_NAME # Not really needed, but keeps things quick
-      - docker rm $$CON_NAME
+    repo: nzbget-dev
+    curl_opts: -u nzbget:tegbzn6789
+    curl: ':6789'
+    delay: 5
 
   publish:
     image: spritsail/docker-publish
