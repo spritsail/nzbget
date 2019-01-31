@@ -1,4 +1,4 @@
-FROM spritsail/alpine:3.8
+FROM spritsail/alpine:3.9
 
 ARG NZBGET_VER=20.0
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
