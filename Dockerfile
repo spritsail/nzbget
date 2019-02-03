@@ -15,6 +15,10 @@ RUN apk add --no-cache \
     \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
  && git reset "v${NZBGET_VER}" --hard \
+    # Apply OpenSSL 1.1.1 compatibility patch
+ && wget -qO- https://github.com/nzbget/nzbget/commit/8a59079627650c7cc3ef2308b1de54c08254a849.patch | git apply \
+    # Apply OpenSSL no-comp patch for Alpine 3.9
+ && wget -qO- https://github.com/nzbget/nzbget/commit/fa57474d784f28050f0027f796cab8621946e082.patch | git apply \
     \
  && ./configure \
         --disable-dependency-tracking \
