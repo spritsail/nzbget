@@ -1,6 +1,6 @@
 FROM spritsail/alpine:3.9
 
-ARG NZBGET_VER=21.0-r2220
+ARG NZBGET_VER=21.0-r2296
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -14,10 +14,6 @@ RUN apk add --no-cache \
         libxml2-dev zlib-dev openssl-dev \
     \
  && git clone https://github.com/nzbget/nzbget.git -b "v${NZBGET_VER}" --depth=1 . \
-    # Apply OpenSSL 1.1.1 compatibility patch
- && wget -qO- https://github.com/nzbget/nzbget/commit/8a59079627650c7cc3ef2308b1de54c08254a849.patch | git apply \
-    # Apply OpenSSL no-comp patch for Alpine 3.9
- && wget -qO- https://github.com/nzbget/nzbget/commit/fa57474d784f28050f0027f796cab8621946e082.patch | git apply \
     \
  && ./configure \
         --disable-dependency-tracking \
