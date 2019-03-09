@@ -57,6 +57,9 @@ LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
 
 WORKDIR /nzbget
 
+HEALTHCHECK --start-period=5s --timeout=3s \
+    CMD wget -qO- -S http://$(sed -nE 's/^ControlUsername=(.*)$/\1/p' /config/nzbget.conf):$(sed -nE 's/^ControlPassword=(.*)$/\1/p' /config/nzbget.conf)@0.0.0.0:6789/jsonrpc/version
+
 EXPOSE 6789
 VOLUME ["/config", "/downloads"]
 ENTRYPOINT ["/sbin/tini", "--"]
