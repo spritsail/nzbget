@@ -1,29 +1,48 @@
-pipeline:
-  build:
-    image: spritsail/docker-build
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: always
+  image: spritsail/docker-build
+  settings:
     repo: nzbget-dev
 
-  test:
-    image: spritsail/docker-test
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    repo: nzbget-dev
+- name: test
+  pull: always
+  image: spritsail/docker-test
+  settings:
+    curl: :6789
     curl_opts: -u nzbget:tegbzn6789
-    curl: ':6789'
     delay: 5
+    repo: nzbget-dev
 
-  publish:
-    image: spritsail/docker-publish
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    secrets: [ docker_username, docker_password, microbadger_token ]
-    when: { branch: [ develop ], event: [ push, tag, deployment ] }
+- name: publish
+  pull: always
+  image: spritsail/docker-publish
+  settings:
     from: nzbget-dev
     repo: spritsail/nzbget
     tags:
-      - 'dev'
-      - '%label io.spritsail.version.nzbget'
+    - dev
+    - "%label io.spritsail.version.nzbget"
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    branch:
+    - develop
+    event:
+    - push
 
-  notify:
-    image: spritsail/notify
-    when: { status: [ success, failure ] }
-    secrets: [ webhook_url, notify_token ]
+---
+kind: signature
+hmac: 3c2e5bae17cb1e0bf68c69de37b1b2dbf9052614909f05bc823ed8c19e426f75
+
+...
