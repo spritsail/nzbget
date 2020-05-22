@@ -14,6 +14,8 @@ RUN apk add --no-cache \
         libxml2-dev zlib-dev openssl-dev \
     \
  && git clone https://github.com/nzbget/nzbget.git -b "v${NZBGET_VER}" --depth=1 . \
+    # Apply fixed #693: negative values for "FileSizeLo" in JSON-RPC
+ && wget -qO- https://github.com/nzbget/nzbget/commit/a124a91a84d3221dea25d7f5bb51a837ff75183a.patch | git apply \
     \
  && ./configure \
         --disable-dependency-tracking \
