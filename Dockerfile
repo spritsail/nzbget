@@ -15,6 +15,8 @@ RUN apk add --no-cache \
     \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
  && git reset "v${NZBGET_VER}" --hard \
+    # Apply fixed #693: negative values for "FileSizeLo" in JSON-RPC
+ && wget -qO- https://github.com/nzbget/nzbget/commit/a124a91a84d3221dea25d7f5bb51a837ff75183a.patch | git apply \
     \
  && ./configure \
         --disable-dependency-tracking \
