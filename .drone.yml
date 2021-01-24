@@ -10,8 +10,6 @@ steps:
 - name: build
   pull: always
   image: spritsail/docker-build
-  settings:
-    repo: nzbget-dev
 
 - name: test
   pull: always
@@ -20,21 +18,17 @@ steps:
     curl: :6789
     curl_opts: -u nzbget:tegbzn6789
     delay: 5
-    repo: nzbget-dev
 
 - name: publish
   pull: always
   image: spritsail/docker-publish
   settings:
-    from: nzbget-dev
     repo: spritsail/nzbget
     tags:
     - dev
     - "%label io.spritsail.version.nzbget"
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
+    login:
+      from_secret: docker_login
   when:
     branch:
     - develop
@@ -43,6 +37,6 @@ steps:
 
 ---
 kind: signature
-hmac: 3c2e5bae17cb1e0bf68c69de37b1b2dbf9052614909f05bc823ed8c19e426f75
+hmac: c21b44f363de12ac18006c341ab5dcd38914bbfe9431fb7184e22ae9c7aab270
 
 ...
