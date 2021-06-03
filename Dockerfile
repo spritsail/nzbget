@@ -1,6 +1,6 @@
 FROM spritsail/alpine:3.13
 
-ARG NZBGET_VER=21.0
+ARG NZBGET_VER=21.1
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -15,8 +15,6 @@ RUN apk add --no-cache \
     \
  && git clone -b develop https://github.com/nzbget/nzbget.git . \
  && git reset "v${NZBGET_VER}" --hard \
-    # Apply fixed #693: negative values for "FileSizeLo" in JSON-RPC
- && wget -qO- https://github.com/nzbget/nzbget/commit/a124a91a84d3221dea25d7f5bb51a837ff75183a.patch | git apply \
     \
  && ./configure \
         --disable-dependency-tracking \
