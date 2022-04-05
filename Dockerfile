@@ -38,6 +38,7 @@ RUN apk add --no-cache -t build_deps \
  && ./configure \
         --disable-dependency-tracking \
         --disable-curses \
+        --enable-debug \
  && make -j$(nproc 2>/dev/null || grep processor /proc/cpuinfo | wc -l || echo 1) \
     \
  && sed -i 's|\(^AppDir=\).*|\1/nzbget|; \
