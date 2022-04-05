@@ -1,19 +1,39 @@
-FROM spritsail/alpine:3.13
+FROM spritsail/alpine:3.15
 
 ARG NZBGET_VER=21.1
+ARG UNRAR_VER=6.1.4
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
 WORKDIR /tmp
 
-RUN apk add --no-cache \
-        unrar p7zip \
-        libxml2 openssl zlib ca-certificates \
- && apk add --no-cache -t build_deps \
-        jq git g++ make autoconf \
-        libxml2-dev zlib-dev openssl-dev \
+RUN apk add --no-cache -t build_deps \
+        autoconf \
+        curl \
+        g++ \
+        git \
+        jq \
+        libxml2-dev \
+        make \
+        openssl-dev \
+        zlib-dev \
     \
- && git clone -b develop https://github.com/nzbget/nzbget.git . \
+ && apk add --no-cache \
+        ca-certificates \
+        libssl1.1 \
+        libcrypto1.1 \
+        libxml2 \
+        p7zip \
+        zlib \
+    \
+ && mkdir unrar \
+ && curl -L "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VER}.tar.gz" | \
+        tar -C unrar -xz --strip-components=1 \
+ && make -C unrar \
+ && install -m755 unrar/unrar /usr/bin \
+    \
+ && git clone -b develop https://github.com/nzbget/nzbget.git nzbget \
+ && cd nzbget \
  && git reset "v${NZBGET_VER}" --hard \
     \
  && ./configure \
