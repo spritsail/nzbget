@@ -1,7 +1,7 @@
-FROM spritsail/alpine:3.16
+FROM spritsail/alpine:3.17
 
 ARG NZBGET_VER=21.2-r2333
-ARG UNRAR_VER=6.1.7
+ARG UNRAR_VER=6.2.1
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -20,8 +20,8 @@ RUN apk add --no-cache -t build_deps \
     \
  && apk add --no-cache \
         ca-certificates \
-        libssl1.1 \
-        libcrypto1.1 \
+        libssl3 \
+        libcrypto3 \
         libxml2 \
         p7zip \
         zlib \
@@ -34,6 +34,11 @@ RUN apk add --no-cache -t build_deps \
     \
  && git clone https://github.com/nzbget/nzbget.git -b "v${NZBGET_VER}" --depth=1 nzbget \
  && cd nzbget \
+    # OpenSSL 3 compatibility: https://github.com/nzbget/nzbget/pull/793/commits
+ && git fetch origin pull/793/head \
+ && git -c user.name=docker -c user.email=nzbget@docker \
+        cherry-pick f76e8555504e3af4cf8dd4a8c8e374b3ca025099 \
+    \
  && ./configure \
         --disable-dependency-tracking \
         --disable-curses \
