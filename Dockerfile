@@ -67,11 +67,11 @@ RUN apk add --no-cache -t build_deps \
 ENV SUID=904 SGID=900
 ENV NZBGET_CONF_FILE="/config/nzbget.conf"
 
-LABEL maintainer="Spritsail <nzbget@spritsail.io>" \
-      org.label-schema.name="NZBGet" \
-      org.label-schema.url="https://nzbget.net/" \
-      org.label-schema.description="NZBGet - the efficient Usenet downloader" \
-      org.label-schema.version=${NZBGET_VER} \
+LABEL org.opencontainers.image.authors="Spritsail <nzbget@spritsail.io>" \
+      org.opencontainers.image.title="NZBGet" \
+      org.opencontainers.image.url="https://nzbget.net/" \
+      org.opencontainers.image.description="NZBGet - the efficient Usenet downloader" \
+      org.opencontainers.image.version=${NZBGET_VER} \
       io.spritsail.version.nzbget=${NZBGET_VER}
 
 WORKDIR /nzbget
