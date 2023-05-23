@@ -1,4 +1,4 @@
-FROM spritsail/alpine:3.17
+FROM spritsail/alpine:3.18
 
 ARG NZBGET_VER=21.1
 ARG UNRAR_VER=6.2.1
