@@ -1,7 +1,7 @@
 repo = "spritsail/nzbget"
 architectures = ["amd64", "arm64"]
 branches = ["develop"]
-tags = ["dev", "%label io.spritsail.version.nzbget"]
+tags = ["develop", "%label io.spritsail.version.nzbget"]
 
 def main(ctx):
   builds = []
