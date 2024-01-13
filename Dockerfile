@@ -1,7 +1,8 @@
-FROM spritsail/alpine:3.18
+FROM spritsail/alpine:3.19
 
-ARG NZBGET_VER=21.2-r2333
-ARG UNRAR_VER=6.2.1
+ARG NZBGET_VER=22.2-r2379
+ARG UNRAR_VER=6.2.12
+
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 
@@ -9,12 +10,14 @@ WORKDIR /tmp
 
 RUN apk add --no-cache -t build_deps \
         autoconf \
+        automake \
         curl \
         g++ \
         git \
         jq \
         libxml2-dev \
         make \
+        ncurses-dev \
         openssl-dev \
         zlib-dev \
     \
@@ -34,11 +37,7 @@ RUN apk add --no-cache -t build_deps \
     \
  && git clone https://github.com/nzbget/nzbget.git -b "v${NZBGET_VER}" --depth=1 nzbget \
  && cd nzbget \
-    # OpenSSL 3 compatibility: https://github.com/nzbget/nzbget/pull/793/commits
- && git fetch origin pull/793/head \
- && git -c user.name=docker -c user.email=nzbget@docker \
-        cherry-pick f76e8555504e3af4cf8dd4a8c8e374b3ca025099 \
-    \
+ && autoreconf -sif \
  && ./configure \
         --disable-dependency-tracking \
         --disable-curses \
@@ -69,7 +68,7 @@ ENV NZBGET_CONF_FILE="/config/nzbget.conf"
 
 LABEL org.opencontainers.image.authors="Spritsail <nzbget@spritsail.io>" \
       org.opencontainers.image.title="NZBGet" \
-      org.opencontainers.image.url="https://nzbget.net/" \
+      org.opencontainers.image.url="https://nzbget.com/" \
       org.opencontainers.image.description="NZBGet - the efficient Usenet downloader" \
       org.opencontainers.image.version=${NZBGET_VER} \
       io.spritsail.version.nzbget=${NZBGET_VER}
