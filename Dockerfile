@@ -1,6 +1,6 @@
 FROM spritsail/alpine:3.19
 
-ARG NZBGET_VER=22.0
+ARG NZBGET_VER=23.0
 ARG UNRAR_VER=6.2.12
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
@@ -10,6 +10,7 @@ WORKDIR /tmp
 RUN apk add --no-cache -t build_deps \
         autoconf \
         automake \
+        boost-dev \
         curl \
         g++ \
         git \
@@ -21,6 +22,7 @@ RUN apk add --no-cache -t build_deps \
         zlib-dev \
     \
  && apk add --no-cache \
+        boost1.82-json \
         ca-certificates \
         libssl3 \
         libcrypto3 \
@@ -31,7 +33,7 @@ RUN apk add --no-cache -t build_deps \
  && mkdir unrar \
  && curl -L "https://www.rarlab.com/rar/unrarsrc-${UNRAR_VER}.tar.gz" | \
         tar -C unrar -xz --strip-components=1 \
- && make -C unrar \
+ && make -j$(nproc) -C unrar \
  && install -m755 unrar/unrar /usr/bin \
     \
  && git clone -b develop https://github.com/nzbgetcom/nzbget.git nzbget \
