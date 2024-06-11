@@ -1,4 +1,4 @@
-FROM spritsail/alpine:3.19
+FROM spritsail/alpine:3.20
 
 ARG NZBGET_VER=2417
 ARG UNRAR_VER=7.0.7
@@ -22,7 +22,7 @@ RUN apk add --no-cache -t build_deps \
         zlib-dev \
     \
  && apk add --no-cache \
-        boost1.82-json \
+        boost1.84-json \
         ca-certificates \
         libssl3 \
         libcrypto3 \
