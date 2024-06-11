@@ -1,6 +1,6 @@
-FROM spritsail/alpine:3.19
+FROM spritsail/alpine:3.20
 
-ARG NZBGET_VER=23.0
+ARG NZBGET_VER=24.1
 ARG UNRAR_VER=6.2.12
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
@@ -22,7 +22,7 @@ RUN apk add --no-cache -t build_deps \
         zlib-dev \
     \
  && apk add --no-cache \
-        boost1.82-json \
+        boost1.84-json \
         ca-certificates \
         libssl3 \
         libcrypto3 \
