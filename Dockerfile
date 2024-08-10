@@ -8,16 +8,13 @@ ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
 WORKDIR /tmp
 
 RUN apk add --no-cache -t build_deps \
-        autoconf \
-        automake \
+        cmake \
         boost-dev \
         curl \
         g++ \
         git \
-        jq \
         libxml2-dev \
         make \
-        ncurses-dev \
         openssl-dev \
         zlib-dev \
     \
@@ -39,13 +36,8 @@ RUN apk add --no-cache -t build_deps \
  && git clone -b develop https://github.com/nzbgetcom/nzbget.git nzbget \
  && cd nzbget \
  && git reset $(git rev-list develop --reverse | sed -ne ${NZBGET_VER}p) --hard \
- && autoreconf -sif \
- && ./configure \
-        --disable-dependency-tracking \
-        --disable-curses \
-        --enable-debug \
- && make -j$(nproc 2>/dev/null || grep processor /proc/cpuinfo | wc -l || echo 1) \
-    \
+ && cmake . -DCMAKE_INSTALL_PREFIX=/tmp/nzb -DDISABLE_CURSES=1 \
+ && cmake --build . -j $(nproc 2>/dev/null || grep processor /proc/cpuinfo | wc -l || echo 1) \
  && sed -i 's|\(^AppDir=\).*|\1/nzbget|; \
             s|\(^WebDir=\).*|\1/${AppDir}/webui|; \
             s|\(^MainDir=\).*|\1/downloads|; \
