@@ -1,6 +1,6 @@
 FROM spritsail/alpine:3.20
 
-ARG NZBGET_VER=2463
+ARG NZBGET_VER=2490
 ARG UNRAR_VER=7.0.7
 ARG CXXFLAGS="-Ofast -pipe -fstack-protector-strong"
 ARG LDFLAGS="-Wl,-O1,--sort-common -Wl,-s"
